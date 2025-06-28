@@ -68,7 +68,13 @@ function connectWebSocket() {
     return;
   }
 
-  ws = new WebSocket("ws://localhost:3000");
+  // Tentukan host WebSocket secara dinamis
+  // Menggunakan window.location.host untuk mendapatkan 'localhost:3000' atau 'example.com'
+  // dan window.location.protocol untuk 'http:' atau 'https:'
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const host = window.location.host; // Akan menjadi 'localhost:3000' saat dev, atau 'namadomainanda.com' saat deploy
+
+  ws = new WebSocket(`${protocol}//${host}`);
 
   ws.onopen = () => {
     addSystemMessage("Terhubung ke server chat.");
