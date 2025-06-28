@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grup Chat WebSocket</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better scrolling */
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .chat-app-container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Ensure inner elements are contained */
+            margin: 20px 0; /* Add vertical margin */
+        }
+
+        /* --- User List Sidebar --- */
+        .user-list-sidebar {
+            width: 280px;
+            background-color: #f7f9fc;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-list-sidebar h3 {
+            color: #555;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 1.2em;
+        }
+
+        #user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1; /* Allows user list to take available space */
+            overflow-y: auto; /* Enable scrolling for long user lists */
+        }
+
+        #user-list li {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        #user-list li:hover {
+            background-color: #e9ecef;
+        }
+
+        #user-list li.selected {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #user-list li.selected:hover {
+            background-color: #0056b3; /* Darker on hover when selected */
+        }
+
+        .user-status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-right: 10px;
+            display: inline-block;
+            box-shadow: 0 0 3px rgba(0,0,0,0.2);
+        }
+        .user-status-indicator.online {
+            background-color: #28a745; /* Green for online */
+        }
+
+        /* --- Chat Area --- */
+        .chat-area {
+            flex-grow: 1; /* Take remaining space */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background-color: #e9f0f9;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            margin: 0;
+            font-size: 1.4em;
+            color: #333;
+        }
+
+        #current-recipient {
+            font-weight: 600;
+            color: #007bff;
+        }
+
+        #chat-box {
+            flex-grow: 1; /* Allows chat box to take available space */
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 250px); /* Adjust based on header/footer height */
+            min-height: 300px; /* Ensure a minimum height */
+            background-color: #fdfdfd;
+            border-bottom: 1px solid #eee;
+        }
+
+        .message-container {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: flex-end;
+            max-width: 90%; /* Limit message bubble width */
+        }
+
+        .message-container.self {
+            justify-content: flex-end;
+            margin-left: auto;
+        }
+
+        .message-container.other {
+            justify-content: flex-start;
+            margin-right: auto;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px; /* Rounded bubbles */
+            line-height: 1.4;
+            max-width: 100%; /* Ensures text wraps within bubble */
+            word-wrap: break-word; /* For long words */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.self .message-content {
+            background-color: #007bff;
+            color: white;
+            border-bottom-right-radius: 2px; /* For tail effect */
+        }
+
+        .message.other .message-content {
+            background-color: #e6e6e6;
+            color: #333;
+            border-bottom-left-radius: 2px; /* For tail effect */
+        }
+
+        .message.private .message-content {
+            background-color: #ffebcd; /* Warna untuk pesan pribadi */
+            color: #5d4037;
+            border: 1px solid #e0b26f;
+        }
+
+        .message.system .message-content {
+            background-color: transparent;
+            color: #888;
+            font-style: italic;
+            text-align: center;
+            width: 100%;
+            box-shadow: none;
+            padding: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .message-sender {
+            font-size: 0.85em;
+            color: #555;
+            margin-bottom: 3px;
+            font-weight: 500;
+        }
+        .message-container.self .message-sender {
+            text-align: right;
+            color: #fff; /* For sender name in self bubble */
+        }
+        .message-container.other .message-sender {
+            text-align: left;
+        }
+        .message-container.system .message-sender { display: none; } /* Hide sender for system messages */
+
+
+        .message-input-area {
+            display: flex;
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #f7f9fc;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        #message-input:focus {
+            border-color: #007bff;
+        }
+
+        #send-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        #send-button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        #send-button:disabled {
+            background-color: #a0c9f1;
+            cursor: not-allowed;
+        }
+
+        /* --- User Name Input Area --- */
+        .user-init-container {
+            padding: 20px;
+            background-color: #e6f7ff;
+            border-bottom: 1px solid #cceeff;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .user-init-container input {
+            padding: 10px 15px;
+            border: 1px solid #aaddff;
+            border-radius: 20px;
+            font-size: 1em;
+            margin-right: 10px;
+            outline: none;
+        }
+
+        .user-init-container button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease;
+        }
+
+        .user-init-container button:hover {
+            background-color: #218838;
+        }
+
+        #current-user-info {
+            margin-top: 15px;
+            font-weight: 600;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-app-container">
+        <div class="user-list-sidebar">
+            <h3>User Online</h3>
+            <div class="user-init-container">
+                <input type="text" id="user-name-input" placeholder="Masukkan nama Anda..." />
+                <button id="set-user-name-button" style="margin-top: 10px;">Gabung Chat</button>
+                <div id="current-user-info"></div>
+            </div>
+            <ul id="user-list">
+                <li data-user="all" class="selected">
+                    <span class="user-status-indicator online"></span>
+                    Semua (Public Chat)
+                </li>
+            </ul>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header">
+                <h2>Chat dengan <span id="current-recipient">Semua</span></h2>
+            </div>
+            <div id="chat-box"></div>
+            <div class="message-input-area">
+                <input type="text" id="message-input" placeholder="Ketik pesan Anda..." disabled />
+                <button id="send-button" disabled>Kirim</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const userNameInput = document.getElementById('user-name-input');
+        const setUserNameButton = document.getElementById('set-user-name-button');
+        const currentUserInfo = document.getElementById('current-user-info');
+        const currentRecipientSpan = document.getElementById('current-recipient');
+        const userList = document.getElementById('user-list');
+
+        let ws = null; // WebSocket connection object
+        let myUserName = '';
+        let currentRecipient = 'all'; // Default recipient is 'all' (public chat)
+
+        // --- Event Listeners ---
+        setUserNameButton.addEventListener('click', () => {
+            const userName = userNameInput.value.trim();
+            if (userName) {
+                myUserName = userName;
+                connectWebSocket();
+                userNameInput.disabled = true;
+                setUserNameButton.disabled = true;
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                currentUserInfo.textContent = `Anda: ${myUserName}`;
+            } else {
+                alert('Nama pengguna tidak boleh kosong!');
+            }
+        });
+
+        sendButton.addEventListener('click', () => {
+            sendMessage();
+        });
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        userList.addEventListener('click', (e) => {
+            const targetLi = e.target.closest('li');
+            if (targetLi && targetLi.dataset.user) { // Ensure it's a list item with data-user
+                // Hapus seleksi sebelumnya
+                const currentSelected = userList.querySelector('.selected');
+                if (currentSelected) {
+                    currentSelected.classList.remove('selected');
+                }
+                // Tambahkan seleksi baru
+                targetLi.classList.add('selected');
+                currentRecipient = targetLi.dataset.user;
+                currentRecipientSpan.textContent = currentRecipient === 'all' ? 'Semua' : currentRecipient;
+                addSystemMessage(`Anda sekarang mengirim pesan ke: ${currentRecipient === 'all' ? 'Semua' : currentRecipient}`);
+            }
+        });
+
+        // --- WebSocket Connection ---
+        function connectWebSocket() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
+            ws = new WebSocket('ws://localhost:3000');
+
+            ws.onopen = () => {
+                addSystemMessage('Terhubung ke server chat.');
+                // Kirim pesan inisialisasi nama pengguna ke server
+                ws.send(`init_user:${myUserName}`);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'chat_message') {
+                        // Pesan publik atau pesan yang dikirim sendiri
+                        // Note: Server mengirim 'self' untuk pesan yang dikirim oleh client itu sendiri
+                        if (data.sender === myUserName || data.recipient === 'self') {
+                            addMessage(data.sender, data.content, 'self');
+                        } else {
+                            addMessage(data.sender, data.content, 'other');
+                        }
+                    } else if (data.type === 'private_message') {
+                        // Pesan pribadi yang diterima
+                        addMessage(data.sender, data.content, 'private');
+                    } else if (data.type === 'private_message_sent') {
+                        // Konfirmasi pesan pribadi terkirim
+                        addMessage(`${data.recipient} (Pribadi Anda)`, data.content, 'self private');
+                    } else if (data.type === 'error') {
+                        addSystemMessage(`ERROR: ${data.message}`);
+                    } else if (data.type === 'user_list') {
+                        updateUserList(data.users);
+                    } else {
+                        // Pesan sistem atau pesan lain yang tidak di-JSON
+                        addSystemMessage(event.data);
+                    }
+                } catch (e) {
+                    // Jika bukan JSON, mungkin itu pesan sistem biasa dari server
+                    addSystemMessage(event.data);
+                    console.warn('Received non-JSON message or parse error:', event.data, e);
+                }
+            };
+
+            ws.onclose = () => {
+                addSystemMessage('Terputus dari server chat.');
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+                userNameInput.disabled = false;
+                setUserNameButton.disabled = false;
+                myUserName = '';
+                currentUserInfo.textContent = '';
+                currentRecipient = 'all';
+                currentRecipientSpan.textContent = 'Semua';
+                // Kosongkan user list kecuali 'Semua' dan reset selected
+                userList.innerHTML = '<li data-user="all" class="selected"><span class="user-status-indicator online"></span>Semua (Public Chat)</li>';
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                addSystemMessage('Terjadi kesalahan koneksi.');
+            };
+        }
+
+        // --- Message and UI Functions ---
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message && ws && ws.readyState === WebSocket.OPEN && myUserName) {
+                const chatMessage = {
+                    type: 'chat_message',
+                    sender: myUserName,
+                    recipient: currentRecipient,
+                    content: message
+                };
+                ws.send(JSON.stringify(chatMessage));
+                messageInput.value = ''; // Clear input
+            }
+        }
+
+        function addMessage(sender, content, type = 'other') {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message-container', type);
+
+            const messageContentDiv = document.createElement('div');
+            messageContentDiv.classList.add('message-content');
+
+            if (type !== 'system') {
+                const senderSpan = document.createElement('div');
+                senderSpan.classList.add('message-sender');
+                // Don't show "Anda" as sender for your own messages, just "Anda" is enough
+                if (type === 'self') {
+                     senderSpan.textContent = 'Anda';
+                } else if (type === 'private' && sender === myUserName) {
+                    // This case is handled by private_message_sent
+                    senderSpan.textContent = `Pribadi ke ${sender}`;
+                }
+                else {
+                    senderSpan.textContent = sender;
+                }
+                messageContentDiv.appendChild(senderSpan);
+            }
+
+            const contentP = document.createElement('p');
+            contentP.textContent = content;
+            messageContentDiv.appendChild(contentP);
+
+            messageContainer.appendChild(messageContentDiv);
+            chatBox.appendChild(messageContainer);
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+        }
+
+        function addSystemMessage(message) {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message-container', 'system');
+
+            const messageContentDiv = document.createElement('div');
+            messageContentDiv.classList.add('message-content');
+            messageContentDiv.textContent = message;
+
+            messageContainer.appendChild(messageContentDiv);
+            chatBox.appendChild(messageContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function updateUserList(users) {
+            userList.innerHTML = ''; // Clear current list
+
+            // Add "Semua (Public Chat)" option first
+            const allOption = document.createElement('li');
+            allOption.dataset.user = 'all';
+            allOption.innerHTML = '<span class="user-status-indicator online"></span>Semua (Public Chat)';
+            if (currentRecipient === 'all') {
+                allOption.classList.add('selected');
+            }
+            userList.appendChild(allOption);
+
+            // Add other online users
+            users.forEach(user => {
+                if (user !== myUserName) { // Jangan tampilkan diri sendiri di daftar user lain
+                    const li = document.createElement('li');
+                    li.dataset.user = user;
+                    li.innerHTML = `<span class="user-status-indicator online"></span>${user}`;
+                    if (user === currentRecipient) {
+                        li.classList.add('selected');
+                    }
+                    userList.appendChild(li);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
