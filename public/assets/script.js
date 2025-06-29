@@ -6,7 +6,7 @@ const setUserNameButton = document.getElementById("set-user-name-button");
 const currentUserInfo = document.getElementById("current-user-info");
 const currentRecipientSpan = document.getElementById("current-recipient");
 const userList = document.getElementById("user-list");
-const userHistoryList = document.getElementById("user-history-list");
+const userHistoryTags = document.getElementById("user-history-tags"); // Mengubah nama variabel
 
 let ws = null;
 let myUserName = "";
@@ -18,11 +18,9 @@ setUserNameButton.addEventListener("click", () => {
   if (userName) {
     myUserName = userName;
 
-    // Pastikan WebSocket terhubung sebelum mengirim init_user
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(`init_user:${myUserName}`);
     } else {
-      // Jika belum terhubung, buat koneksi dan akan kirim init_user di onopen
       connectWebSocket();
     }
 
@@ -68,21 +66,24 @@ function connectWebSocket() {
     return;
   }
 
-  // Tentukan host WebSocket secara dinamis
-  // Menggunakan window.location.host untuk mendapatkan 'localhost:3000' atau 'example.com'
-  // dan window.location.protocol untuk 'http:' atau 'https:'
-  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const host = window.location.host; // Akan menjadi 'localhost:3000' saat dev, atau 'namadomainanda.com' saat deploy
+  const isLocalhost =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+  let websocketUrl;
 
-  ws = new WebSocket(`${protocol}//${host}`);
+  if (isLocalhost) {
+    websocketUrl = `ws://localhost:3000`;
+  } else {
+    websocketUrl = `wss://nama-domain-server-backend-anda.com`; // GANTI DENGAN URL PUBLIK SERVER BACKEND ANDA
+  }
+
+  ws = new WebSocket(websocketUrl);
 
   ws.onopen = () => {
     addSystemMessage("Terhubung ke server chat.");
-    // Kirim init_user jika nama pengguna sudah diatur (dari klik "Gabung Chat")
     if (myUserName) {
       ws.send(`init_user:${myUserName}`);
     }
-    // Server akan mengirim user_history secara otomatis saat koneksi dibuka.
   };
 
   ws.onmessage = (event) => {
@@ -117,10 +118,7 @@ function connectWebSocket() {
       } else if (data.type === "user_list") {
         updateUserList(data.users);
       } else if (data.type === "user_history") {
-        // Ini akan dipanggil baik saat halaman dimuat (koneksi awal)
-        // maupun saat user mengirim init_user (karena server merespons).
         updateUserHistory(data.history);
-        // Tambahkan log untuk debug
         console.log("User history updated by server response:", data.history);
       }
     } catch (e) {
@@ -153,10 +151,9 @@ function connectWebSocket() {
   };
 }
 
-// --- Panggil connectWebSocket saat halaman dimuat ---
 document.addEventListener("DOMContentLoaded", connectWebSocket);
 
-// --- Fungsi lain tetap sama ---
+// --- Message and UI Functions (tidak ada perubahan signifikan di sini) ---
 function sendMessage() {
   const message = messageInput.value.trim();
   if (message && ws && ws.readyState === WebSocket.OPEN && myUserName) {
@@ -306,21 +303,24 @@ function updateUserList(users) {
   });
 }
 
+// --- FUNGSI updateUserHistory yang dimodifikasi untuk tag ---
 function updateUserHistory(history) {
-  userHistoryList.innerHTML = "";
+  userHistoryTags.innerHTML = ""; // Mengubah nama variabel ke userHistoryTags
   history.forEach((user) => {
-    const li = document.createElement("li");
-    li.classList.add(
-      "flex",
+    const span = document.createElement("span"); // Membuat elemen <span>
+    span.classList.add(
+      "inline-flex",
       "items-center",
-      "p-2",
-      "text-gray-600",
+      "px-3",
+      "py-1",
+      "rounded-full",
       "text-sm",
-      "mb-1",
-      "rounded-md",
-      "bg-gray-50"
+      "font-medium",
+      "bg-purple-100",
+      "text-purple-800",
+      "shadow-sm" // Styling Tailwind untuk tag
     );
-    li.innerHTML = `<span class="text-gray-400 mr-2">&bull;</span> ${user}`;
-    userHistoryList.appendChild(li);
+    span.textContent = user;
+    userHistoryTags.appendChild(span); // Menambahkan ke div userHistoryTags
   });
 }
