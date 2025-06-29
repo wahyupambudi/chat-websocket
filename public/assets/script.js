@@ -158,9 +158,69 @@ function sendMessage() {
   }
 }
 
+// --- Fungsi untuk mendapatkan inisial ---
+function getInitials(name) {
+  if (!name) return "";
+  const words = name.split(" ").filter((word) => word.length > 0);
+  if (words.length > 1) {
+    // Ambil inisial dari dua kata pertama jika ada
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  // Jika hanya satu kata, ambil huruf pertama
+  return name[0].toUpperCase();
+}
+
 function addMessage(sender, content, type = "other") {
   const messageContainer = document.createElement("div");
   messageContainer.classList.add("flex", "mb-2", "items-end", "max-w-[90%]");
+
+  // Untuk pesan yang dikirim sendiri (self), tata letak avatar dan nama ada di kanan
+  if (type === "self") {
+    messageContainer.classList.add("ml-auto", "justify-end");
+  } else {
+    messageContainer.classList.add("mr-auto", "justify-start");
+  }
+
+  // Buat wadah untuk avatar dan nama (di luar gelembung pesan)
+  const avatarNameContainer = document.createElement("div");
+  avatarNameContainer.classList.add(
+    "flex",
+    "flex-col",
+    "items-center",
+    "text-center",
+    "mx-2",
+    "flex-shrink-0"
+  ); // Tambahkan margin dan tata letak vertikal
+
+  const avatarDiv = document.createElement("div");
+  avatarDiv.classList.add(
+    "user-avatar-placeholder",
+    "w-8",
+    "h-8",
+    "rounded-full",
+    "flex",
+    "items-center",
+    "justify-center",
+    "text-sm",
+    "font-bold",
+    "bg-gray-300",
+    "text-gray-800"
+  ); // Default styling untuk avatar
+  avatarDiv.textContent = getInitials(sender); // Ambil inisial
+
+  const senderNameSpan = document.createElement("span");
+  senderNameSpan.classList.add(
+    "text-xs",
+    "text-gray-600",
+    "mt-1",
+    "max-w-[60px]",
+    "truncate"
+  ); // Gaya untuk nama pengirim di bawah avatar
+  senderNameSpan.textContent = type === "self" ? "Anda" : sender;
+
+  // Gabungkan avatar dan nama ke dalam container
+  avatarNameContainer.appendChild(avatarDiv);
+  avatarNameContainer.appendChild(senderNameSpan);
 
   const messageContentDiv = document.createElement("div");
   messageContentDiv.classList.add(
@@ -171,32 +231,23 @@ function addMessage(sender, content, type = "other") {
     "text-sm"
   );
 
-  const senderSpan = document.createElement("div");
-  senderSpan.classList.add("font-semibold", "text-xs", "mb-1");
-
   const contentP = document.createElement("p");
   contentP.textContent = content;
 
+  // Tentukan gaya gelembung pesan
   if (type === "self") {
-    messageContainer.classList.add("ml-auto", "justify-end");
     messageContentDiv.classList.add(
       "bg-blue-600",
       "text-white",
       "rounded-br-sm"
     );
-    senderSpan.classList.add("text-blue-200", "text-right");
-    senderSpan.textContent = "Anda";
   } else if (type === "other") {
-    messageContainer.classList.add("mr-auto", "justify-start");
     messageContentDiv.classList.add(
       "bg-gray-200",
       "text-gray-800",
       "rounded-bl-sm"
     );
-    senderSpan.classList.add("text-gray-600", "text-left");
-    senderSpan.textContent = sender;
   } else if (type === "private") {
-    messageContainer.classList.add("mr-auto", "justify-start");
     messageContentDiv.classList.add(
       "bg-yellow-100",
       "text-yellow-800",
@@ -204,15 +255,22 @@ function addMessage(sender, content, type = "other") {
       "border-yellow-300",
       "rounded-bl-sm"
     );
-    senderSpan.classList.add("text-yellow-700", "text-left");
-    senderSpan.textContent = `PRIBADI dari ${sender}`;
   }
 
-  if (type !== "system") {
-    messageContentDiv.prepend(senderSpan);
+  messageContentDiv.appendChild(contentP); // Tambahkan konten pesan
+
+  // Atur urutan elemen berdasarkan tipe pesan
+  if (type === "self") {
+    // Untuk pesan sendiri, avatar di kanan, gelembung pesan di kiri
+    messageContainer.appendChild(messageContentDiv);
+    messageContainer.appendChild(avatarNameContainer);
+  } else if (type === "other" || type === "private") {
+    // Untuk pesan orang lain, avatar di kiri, gelembung pesan di kanan
+    messageContainer.appendChild(avatarNameContainer);
+    messageContainer.appendChild(messageContentDiv);
   }
-  messageContentDiv.appendChild(contentP);
-  messageContainer.appendChild(messageContentDiv);
+  // Pesan sistem tidak perlu avatar
+
   chatBox.appendChild(messageContainer);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
