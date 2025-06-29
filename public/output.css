@@ -994,9 +994,41 @@ video {
   transition-duration: 200ms;
 }
 
-.hover\:bg-blue-600:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
+/* Tambahkan/pastikan definisi untuk kelas .selected di sini */
+
+.selected {
+  /* Gunakan !important jika benar-benar perlu untuk menimpa,
+       tapi coba tanpa itu dulu untuk melihat apakah ada konflik. */
+  background-color: #3b82f6 !important;
+  /* Contoh kuat */
+  color: #fff !important;
+  /* Contoh kuat */
+  /* Tambahkan transition juga untuk efek smooth */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Opsional: Tambahkan juga gaya hover untuk yang terpilih */
+
+.selected:hover {
+  background-color: #2563eb !important;
+}
+
+/* Jika Anda memiliki scrollbar kustom */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  /* gray-300 */
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #edf2f7;
+  /* gray-100 */
 }
 
 .hover\:bg-blue-700:hover {

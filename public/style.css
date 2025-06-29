@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Tambahkan/pastikan definisi untuk kelas .selected di sini */
+.selected {
+    /* Gunakan !important jika benar-benar perlu untuk menimpa,
+       tapi coba tanpa itu dulu untuk melihat apakah ada konflik. */
+    background-color: theme('colors.blue.500') !important; /* Contoh kuat */
+    color: theme('colors.white') !important; /* Contoh kuat */
+    /* Tambahkan transition juga untuk efek smooth */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Opsional: Tambahkan juga gaya hover untuk yang terpilih */
+.selected:hover {
+    background-color: theme('colors.blue.600') !important;
+}
+
+/* Jika Anda memiliki scrollbar kustom */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0; /* gray-300 */
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background-color: #edf2f7; /* gray-100 */
+}

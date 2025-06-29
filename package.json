@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
+    "start": "nodemon server.js",
     "build-css": "npx tailwindcss -i ./public/style.css -o ./public/output.css --watch"
   },
   "keywords": [],
@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^5.1.0",
+    "nodemon": "^3.1.10",
     "ws": "^8.18.2"
   },
   "devDependencies": {

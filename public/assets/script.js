@@ -6,7 +6,7 @@ const setUserNameButton = document.getElementById("set-user-name-button");
 const currentUserInfo = document.getElementById("current-user-info");
 const currentRecipientSpan = document.getElementById("current-recipient");
 const userList = document.getElementById("user-list");
-const userHistoryTags = document.getElementById("user-history-tags"); // Mengubah nama variabel
+const userHistoryTags = document.getElementById("user-history-tags");
 
 let ws = null;
 let myUserName = "";
@@ -42,9 +42,12 @@ messageInput.addEventListener("keypress", (e) => {
 userList.addEventListener("click", (e) => {
   const targetLi = e.target.closest("li");
   if (targetLi && targetLi.dataset.user) {
+    // Saat mengklik, kita juga perlu memperbarui kelas 'selected' secara langsung
     const currentSelected = userList.querySelector(".selected");
     if (currentSelected) currentSelected.classList.remove("selected");
-    targetLi.classList.add("selected");
+
+    targetLi.classList.add("selected"); // Tambahkan kelas selected
+
     currentRecipient = targetLi.dataset.user;
     currentRecipientSpan.textContent =
       currentRecipient === "all" ? "Semua" : currentRecipient;
@@ -66,18 +69,9 @@ function connectWebSocket() {
     return;
   }
 
-  const isLocalhost =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1";
-  let websocketUrl;
-
-  if (isLocalhost) {
-    websocketUrl = `ws://localhost:3000`;
-  } else {
-    websocketUrl = `wss://nama-domain-server-backend-anda.com`; // GANTI DENGAN URL PUBLIK SERVER BACKEND ANDA
-  }
-
-  ws = new WebSocket(websocketUrl);
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const host = window.location.host; // Akan menjadi 'localhost:3000' saat dev, atau 'namadomainanda.com' saat deploy
+  ws = new WebSocket(`${protocol}//${host}`);
 
   ws.onopen = () => {
     addSystemMessage("Terhubung ke server chat.");
@@ -137,12 +131,8 @@ function connectWebSocket() {
     currentUserInfo.textContent = "";
     currentRecipient = "all";
     currentRecipientSpan.textContent = "Semua";
-    userList.innerHTML = `
-                    <li data-user="all" class="flex items-center p-3 cursor-pointer rounded-md mb-2 bg-blue-500 text-white font-medium hover:bg-blue-600 transition duration-200 selected">
-                        <span class="user-status-indicator w-2.5 h-2.5 rounded-full bg-green-400 mr-3 shadow-md"></span>
-                        Semua (Public Chat)
-                    </li>
-                `;
+    // Panggil updateUserList untuk memastikan 'Semua' terpilih dan daftar bersih
+    updateUserList([]); // Kirim array kosong untuk membersihkan user online
   };
 
   ws.onerror = (error) => {
@@ -153,7 +143,7 @@ function connectWebSocket() {
 
 document.addEventListener("DOMContentLoaded", connectWebSocket);
 
-// --- Message and UI Functions (tidak ada perubahan signifikan di sini) ---
+// --- Fungsi lain ---
 function sendMessage() {
   const message = messageInput.value.trim();
   if (message && ws && ws.readyState === WebSocket.OPEN && myUserName) {
@@ -250,28 +240,38 @@ function addSystemMessage(message) {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+// --- FUNGSI updateUserList yang dimodifikasi ---
 function updateUserList(users) {
-  const allOption = userList.querySelector('[data-user="all"]');
-  userList.innerHTML = "";
+  userList.innerHTML = ""; // Hapus semua item daftar yang ada
+
+  // Buat dan tambahkan item "Semua (Public Chat)"
+  const allOption = document.createElement("li");
+  allOption.dataset.user = "all";
+  allOption.classList.add(
+    "flex",
+    "items-center",
+    "p-3",
+    "cursor-pointer",
+    "rounded-md",
+    "mb-2",
+    "font-medium",
+    "transition",
+    "duration-200"
+  );
+  allOption.innerHTML = `<span class="user-status-indicator w-2.5 h-2.5 rounded-full bg-green-400 mr-3 shadow-md"></span>Semua (Public Chat)`;
   userList.appendChild(allOption);
 
+  // Terapkan kelas 'selected' dan gaya background/text berdasarkan currentRecipient
+  // Penting: Pastikan ini mencakup kedua kondisi (selected dan non-selected)
   if (currentRecipient === "all") {
-    allOption.classList.add(
-      "bg-blue-500",
-      "text-white",
-      "hover:bg-blue-600",
-      "selected"
-    );
+    allOption.classList.add("bg-blue-500", "text-white", "selected");
+    allOption.classList.remove("text-gray-700", "hover:bg-gray-100"); // Pastikan kelas non-selected dihapus
   } else {
-    allOption.classList.remove(
-      "bg-blue-500",
-      "text-white",
-      "hover:bg-blue-600",
-      "selected"
-    );
     allOption.classList.add("text-gray-700", "hover:bg-gray-100");
+    allOption.classList.remove("bg-blue-500", "text-white", "selected"); // Pastikan kelas selected dihapus
   }
 
+  // Tambahkan user online lainnya
   users.forEach((user) => {
     if (user !== myUserName) {
       const li = document.createElement("li");
@@ -288,26 +288,24 @@ function updateUserList(users) {
         "duration-200"
       );
       li.innerHTML = `<span class="user-status-indicator w-2.5 h-2.5 rounded-full bg-green-400 mr-3 shadow-md"></span>${user}`;
+
+      // Terapkan kelas 'selected' dan gaya background/text jika user ini adalah currentRecipient
       if (user === currentRecipient) {
-        li.classList.add(
-          "bg-blue-500",
-          "text-white",
-          "hover:bg-blue-600",
-          "selected"
-        );
+        li.classList.remove("bg-blue-500", "text-white", "selected");
+        li.classList.add("text-gray-700", "hover:bg-gray-100");
       } else {
         li.classList.add("text-gray-700", "hover:bg-gray-100");
+        li.classList.remove("bg-blue-500", "text-white", "selected");
       }
       userList.appendChild(li);
     }
   });
 }
 
-// --- FUNGSI updateUserHistory yang dimodifikasi untuk tag ---
 function updateUserHistory(history) {
-  userHistoryTags.innerHTML = ""; // Mengubah nama variabel ke userHistoryTags
+  userHistoryTags.innerHTML = "";
   history.forEach((user) => {
-    const span = document.createElement("span"); // Membuat elemen <span>
+    const span = document.createElement("span");
     span.classList.add(
       "inline-flex",
       "items-center",
@@ -318,9 +316,9 @@ function updateUserHistory(history) {
       "font-medium",
       "bg-purple-100",
       "text-purple-800",
-      "shadow-sm" // Styling Tailwind untuk tag
+      "shadow-sm"
     );
     span.textContent = user;
-    userHistoryTags.appendChild(span); // Menambahkan ke div userHistoryTags
+    userHistoryTags.appendChild(span);
   });
 }
