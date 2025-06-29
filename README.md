@@ -1,8 +1,6 @@
 # Aplikasi Grup Chat WebSocket Sederhana
 
-*Ganti URL gambar dengan tangkapan layar aplikasi Anda.*
-
-Aplikasi ini adalah contoh sederhana dari sebuah sistem grup chat real-time yang dibangun menggunakan **Node.js** dengan **Express** dan **WebSockets** (melalui library `ws`), serta antarmuka pengguna yang responsif menggunakan **Tailwind CSS**. Aplikasi ini mendukung obrolan publik dan fitur pesan pribadi antar pengguna yang sedang online.
+Aplikasi ini adalah contoh sederhana dari sistem grup chat real-time yang dibangun menggunakan **Node.js** dengan **Express** dan **WebSockets**. Antarmuka pengguna (UI) dibangun dengan **HTML**, **JavaScript**, dan distyling menggunakan **Tailwind CSS** untuk desain yang responsif. Aplikasi ini mendukung obrolan publik, pesan pribadi, dan menampilkan riwayat pengguna yang telah bergabung.
 
 -----
 
@@ -10,10 +8,12 @@ Aplikasi ini adalah contoh sederhana dari sebuah sistem grup chat real-time yang
 
   * **Obrolan Real-time**: Pesan dikirim dan diterima secara instan oleh semua anggota grup.
   * **Pesan Pribadi (Private Message)**: Pengguna dapat mengirim pesan langsung ke pengguna lain yang sedang online.
-  * **Daftar Pengguna Online**: Menampilkan daftar pengguna yang sedang aktif dalam chat.
-  * **Responsif**: Antarmuka pengguna menyesuaikan diri dengan berbagai ukuran layar (desktop dan mobile) berkat **Tailwind CSS**.
+  * **Inisial Pengguna**: Setiap pesan chat dilengkapi dengan inisial nama depan pengirim, memberikan identifikasi visual yang cepat.
+  * **Daftar Pengguna Online**: Menampilkan daftar pengguna yang sedang aktif dalam chat, dengan indikator visual untuk user yang sedang dipilih.
+  * **Riwayat Pengguna**: Menampilkan daftar nama pengguna yang pernah bergabung ke chat sejak server dimulai, ditampilkan dalam bentuk "tag".
+  * **Responsif**: Antarmuka pengguna menyesuaikan diri dengan berbagai ukuran layar (desktop dan mobile) berkat Tailwind CSS.
   * **Input Nama Pengguna**: Pengguna dapat memasukkan nama mereka sebelum bergabung ke chat.
-  * **Notifikasi Sistem**: Pesan sistem untuk peristiwa seperti pengguna bergabung atau keluar.
+  * **Notifikasi Sistem**: Pesan sistem untuk peristiwa seperti pengguna bergabung atau keluar, serta kesalahan koneksi.
 
 -----
 
@@ -21,12 +21,13 @@ Aplikasi ini adalah contoh sederhana dari sebuah sistem grup chat real-time yang
 
   * **Backend**:
       * **Node.js**: Lingkungan runtime JavaScript sisi server.
-      * **Express.js**: Framework web minimalis untuk Node.js.
-      * **ws**: Library WebSocket untuk Node.js.
+      * **Express.js**: Framework web minimalis untuk Node.js, digunakan untuk menyajikan file statis.
+      * **ws**: Library WebSocket populer untuk implementasi WebSocket di Node.js.
   * **Frontend**:
       * **HTML5**: Struktur dasar halaman web.
-      * **JavaScript (Vanilla)**: Logika sisi klien untuk interaksi WebSocket dan UI.
-      * **Tailwind CSS**: Framework CSS utility-first untuk styling yang responsif.
+      * **JavaScript (Vanilla)**: Logika sisi klien untuk interaksi WebSocket, manajemen UI, dan manipulasi DOM.
+      * **Tailwind CSS**: Framework CSS utility-first untuk styling yang responsif dan modular.
+      * **PostCSS & Autoprefixer**: Digunakan oleh Tailwind untuk pemrosesan CSS.
       * **Google Fonts (Poppins)**: Untuk tipografi yang bersih dan modern.
 
 -----
@@ -44,14 +45,12 @@ Pastikan Anda telah menginstal yang berikut ini:
 
 ### Langkah-langkah Instalasi
 
-1.  **Kloning Repositori (Opsional, jika ini ada di Git):**
+1.  **Kloning Repositori:**
 
     ```bash
-    git clone https://github.com/your-username/chat-app-websocket.git
-    cd chat-app-websocket
+    git clone https://github.com/wahyupambudi/chat-websocket.git
+    cd chat-websocket
     ```
-
-    *Jika Anda membuat folder secara manual, lewati langkah ini dan pastikan Anda berada di direktori proyek `chat-app`.*
 
 2.  **Instal Dependensi:**
     Navigasi ke direktori proyek Anda di terminal dan instal semua dependensi yang diperlukan:
@@ -61,14 +60,16 @@ Pastikan Anda telah menginstal yang berikut ini:
     ```
 
 3.  **Bangun (Build) CSS Tailwind:**
-    Tailwind CSS memerlukan proses build untuk menghasilkan file CSS yang akan digunakan oleh browser. Jalankan perintah ini di **terminal terpisah** dan biarkan tetap berjalan karena memiliki mode `watch`.
+    Tailwind CSS memerlukan proses build untuk menghasilkan file CSS akhir (`public/output.css`). Jalankan perintah ini di **terminal terpisah** dan biarkan tetap berjalan karena memiliki mode `watch` (untuk pengembangan).
 
     ```bash
-    npm run build-css
+    npm run watch-css
     ```
 
+    *Catatan: Jika Anda ingin build untuk produksi, gunakan `npm run build-css` yang tidak memiliki `--watch`.*
+
 4.  **Mulai Server Node.js:**
-    Di terminal lain, mulai server aplikasi:
+    Di terminal lain, mulai server aplikasi Anda:
 
     ```bash
     npm start
@@ -79,41 +80,52 @@ Pastikan Anda telah menginstal yang berikut ini:
 ### Menggunakan Aplikasi
 
 1.  Buka browser web Anda dan navigasikan ke `http://localhost:3000`.
-2.  Masukkan **nama pengguna** Anda di kolom yang tersedia dan klik "Gabung Chat".
-3.  Untuk menguji fitur chat, buka beberapa tab atau jendela browser lain ke alamat yang sama (`http://localhost:3000`), dan gunakan nama pengguna yang berbeda di setiap tab.
-4.  **Untuk Chat Publik**: Pastikan "Semua (Public Chat)" terpilih di daftar "User Online". Ketik pesan Anda dan kirim. Pesan akan terlihat oleh semua pengguna.
-5.  **Untuk Pesan Pribadi**: Klik nama pengguna yang Anda tuju di daftar "User Online". Area pesan akan menunjukkan siapa penerimanya. Ketik pesan Anda; pesan ini hanya akan terlihat oleh Anda dan pengguna yang dituju.
+2.  Anda akan melihat daftar "Riwayat User" (jika ada) langsung muncul.
+3.  Masukkan **nama pengguna** Anda di kolom yang tersedia dan klik "Gabung Chat".
+4.  Untuk menguji fitur chat, buka beberapa tab atau jendela browser lain ke alamat yang sama (`http://localhost:3000`), dan gunakan nama pengguna yang berbeda di setiap tab.
+5.  **Memilih Penerima Pesan**:
+      * **Chat Publik**: Klik pada item "Semua (Public Chat)" di daftar "User Online". Latar belakangnya akan berubah untuk menunjukkan bahwa Anda sedang chat di grup publik.
+      * **Pesan Pribadi**: Klik pada nama pengguna tertentu di daftar "User Online". Latar belakang item tersebut akan berubah, dan pesan yang Anda kirim hanya akan terlihat oleh Anda dan pengguna tersebut.
 
 -----
 
 ## Struktur Proyek
 
 ```
-chat-app/
-├── server.js               # Logika server Node.js dan WebSocket
-├── public/
-│   ├── index.html          # Antarmuka pengguna (frontend)
-│   ├── style.css           # File input untuk Tailwind CSS
-│   └── output.css          # Output CSS yang dihasilkan oleh Tailwind
-└── package.json            # Konfigurasi proyek dan dependensi
+chat-websocket/
+├── server.js                   # Logika server Node.js dan WebSocket
+├── public/                     # Folder berisi file frontend
+│   ├── index.html              # Antarmuka pengguna (UI) utama
+│   ├── style.css               # File input untuk Tailwind CSS
+│   ├── output.css              # Output CSS yang dihasilkan oleh Tailwind (dibuat otomatis)
+│   └── assets/
+│       └── script.js           # Logika JavaScript sisi klien
+├── package.json                # Konfigurasi proyek dan dependensi
+├── tailwind.config.js          # Konfigurasi Tailwind CSS
+└── postcss.config.js           # Konfigurasi PostCSS
 ```
 
 -----
 
-## Pengembangan Lebih Lanjut (Ide)
+## Deployment
 
-  * **Manajemen Sesi/Autentikasi**: Tambahkan sistem login untuk mengelola pengguna yang lebih persisten.
-  * **Penyimpanan Pesan**: Integrasikan dengan database (misalnya, MongoDB, PostgreSQL) untuk menyimpan riwayat chat.
-  * **Notifikasi**: Tambahkan notifikasi suara atau visual untuk pesan baru.
-  * **Ruang Obrolan (Rooms)**: Izinkan pengguna membuat dan bergabung ke ruang obrolan yang berbeda.
-  * **Emotikon/Media**: Dukungan untuk pengiriman emotikon atau file media kecil.
-  * **Peningkatan UI/UX**: Desain yang lebih kompleks atau transisi UI yang lebih halus.
+Aplikasi ini terdiri dari dua bagian utama: **Backend** (server Node.js WebSocket) dan **Frontend** (HTML/CSS/JS). Untuk *deploy* ke publik, mereka perlu di-hosting secara terpisah:
 
+1.  **Deploy Backend (server.js):**
+    Karena `server.js` menjalankan server persisten dengan WebSockets, Anda perlu platform hosting yang mendukung Node.js sebagai *Web Service* atau *Backend Service*.
+
+      * **Rekomendasi**: **Render.com**, Heroku, Railway.
+      * Setelah di-deploy, Anda akan mendapatkan URL publik (misalnya, `https://your-backend-app.onrender.com`).
+
+2.  **Deploy Frontend (public/ folder):**
+    File-file frontend Anda (`index.html`, `output.css`, `script.js`) dapat di-hosting sebagai situs statis.
+
+      * **Rekomendasi**: **Netlify**, Vercel, GitHub Pages.
 -----
 
 ## Kontribusi
 
-Jika Anda ingin berkontribusi pada proyek ini, silakan fork repositori dan ajukan pull request.
+Jika Anda ingin berkontribusi pada proyek ini, silakan *fork* repositori dan ajukan *pull request*.
 
 -----
 
