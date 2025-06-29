@@ -264,8 +264,8 @@ function updateUserList(users) {
   // Terapkan kelas 'selected' dan gaya background/text berdasarkan currentRecipient
   // Penting: Pastikan ini mencakup kedua kondisi (selected dan non-selected)
   if (currentRecipient === "all") {
-    allOption.classList.add("bg-blue-500", "text-white", "selected");
-    allOption.classList.remove("text-gray-700", "hover:bg-gray-100"); // Pastikan kelas non-selected dihapus
+    allOption.classList.add("text-gray-700", "text-black", "selected");
+    allOption.classList.remove("bg-blue-500", "hover:bg-gray-100"); // Pastikan kelas non-selected dihapus
   } else {
     allOption.classList.add("text-gray-700", "hover:bg-gray-100");
     allOption.classList.remove("bg-blue-500", "text-white", "selected"); // Pastikan kelas selected dihapus
