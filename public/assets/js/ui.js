@@ -74,7 +74,7 @@ export function addMessage(sender, content, type = 'other') {
     } else if (type === "private") { // Pesan pribadi yang diterima
         messageContentDiv.classList.add("bg-yellow-100", "text-yellow-800", "border", "border-yellow-300", "rounded-bl-sm");
     } else if (type === "self private") { // Pesan pribadi yang Anda kirim
-         messageContentDiv.classList.add("bg-yellow-200", "text-yellow-900", "border", "border-yellow-400", "rounded-br-sm"); // Warna berbeda untuk pribadi Anda
+         messageContentDiv.classList.add("bg-green-200", "text-green-900", "border", "border-green-400", "rounded-br-sm"); // Warna berbeda untuk pribadi Anda
     }
 
     messageContentDiv.appendChild(contentP);
