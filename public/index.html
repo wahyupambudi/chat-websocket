@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Penerapan WebSocket Dengan Studi Kasus aplikasi chat">
     <title>Grup Chat WebSocket</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="./output.css" rel="stylesheet">
@@ -31,8 +32,11 @@
             <ul id="user-list" class="flex-grow overflow-y-auto custom-scrollbar">
                 <li data-user="all"
                     class="flex items-center p-3 cursor-pointer rounded-md mb-2 font-medium transition duration-200">
-                    <span class="user-status-indicator w-2.5 h-2.5 rounded-full bg-green-400 mr-3 shadow-md"></span>
-                    Semua (Public Chat)
+                    <div
+                        class="user-avatar-placeholder bg-gray-400 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-3">
+                        ALL
+                    </div>
+                    <span>Semua (Public Chat)</span>
                 </li>
             </ul>
 
@@ -59,7 +63,7 @@
             </div>
         </div>
     </div>
-    <script src="assets/script.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
 </body>
 
 </html>
