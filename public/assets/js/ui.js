@@ -49,11 +49,11 @@ export function addMessage(sender, content, type = 'other') {
         avatarInitials = getInitials(myUserName); // Gunakan inisial Anda
         type = "self private"; // Mengubah type agar styling yang sama bisa diterapkan
     } else if (type === "private") { // Ini untuk pesan pribadi yang Anda terima
-        displaySenderName = `PRIBADI dari ${sender}`;
+        displaySenderName = `${sender}`;
     }
 
     avatarDiv.textContent = avatarInitials;
-    senderNameSpan.textContent = displaySenderName;
+    senderNameSpan.textContent = sender;
 
     avatarNameContainer.appendChild(avatarDiv);
     avatarNameContainer.appendChild(senderNameSpan);

@@ -65,7 +65,7 @@ export function connectWebSocket() {
         addMessage(data.sender, data.content, "private");
       } else if (data.type === "private_message_sent") {
         addMessage(
-          `${data.recipient} (Pribadi Anda)`,
+          `${myUserName}`,
           data.content,
           "self private"
         );
