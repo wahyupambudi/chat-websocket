@@ -1,18 +1,23 @@
 // public/assets/js/constants.js
 
-export let ws = null; // WebSocket instance
+export let ws = null;
 export let myUserName = "";
-export let currentRecipient = "all"; // Default recipient
+export let currentRecipient = "#public";
 
-// Setter functions to allow other modules to update these values
+export let currentGroupMembers = {}; // Key: groupName, Value: Array of member userNames
+
 export function setWs(newWs) {
-    ws = newWs;
+  ws = newWs;
 }
 
 export function setMyUserName(newName) {
-    myUserName = newName;
+  myUserName = newName;
 }
 
 export function setCurrentRecipient(newRecipient) {
-    currentRecipient = newRecipient;
+  currentRecipient = newRecipient;
+}
+
+export function setCurrentGroupMembers(membersData) {
+  currentGroupMembers = membersData;
 }

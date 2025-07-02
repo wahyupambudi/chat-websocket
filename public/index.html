@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Penerapan WebSocket Dengan Studi Kasus aplikasi chat">
     <title>Grup Chat WebSocket</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="./output.css" rel="stylesheet">
@@ -40,6 +39,27 @@
                 </li>
             </ul>
 
+            <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-4">Grup Chat</h3>
+            <div class="mb-4">
+                <input type="text" id="group-name-input" placeholder="Nama grup baru"
+                    class="w-full p-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm mb-2"
+                    disabled>
+                <button id="create-group-button"
+                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 transition duration-200 text-sm"
+                    disabled>
+                    Buat Grup
+                </button>
+            </div>
+            <ul id="group-list" class="flex-grow overflow-y-auto custom-scrollbar">
+                <li data-group="public"
+                    class="flex items-center p-3 cursor-pointer rounded-md mb-2 font-medium transition duration-200 bg-blue-500 text-white selected">
+                    <div
+                        class="user-avatar-placeholder bg-gray-400 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-3">
+                        #
+                    </div>
+                    <span>public</span>
+                </li>
+            </ul>
             <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-4">Riwayat User</h3>
             <div id="user-history-tags" class="flex flex-wrap gap-2 overflow-y-auto max-h-40 custom-scrollbar">
             </div>
@@ -48,7 +68,7 @@
         <div class="chat-area flex-grow flex flex-col">
             <div class="chat-header p-4 md:p-5 bg-blue-100 border-b border-gray-200 flex justify-between items-center">
                 <h2 class="text-lg md:text-xl font-semibold text-gray-800">Chat dengan <span id="current-recipient"
-                        class="text-blue-700">Semua</span></h2>
+                        class="text-blue-700">#public</span></h2>
             </div>
             <div id="chat-box"
                 class="flex-grow p-4 overflow-y-auto bg-gray-50 custom-scrollbar max-h-[calc(100vh-18rem)] md:max-h-[calc(100vh-4rem)]">
